@@ -42,4 +42,4 @@ class AircraftConfig(BaseModel):
             
         return cls.model_validate(data)
     
-aircraft_config = AircraftConfig.from_config(settings.aircraft_config_path)
+aircraft_config = AircraftConfig.from_config(settings.AIRCRAFT_CONFIG_PATH)

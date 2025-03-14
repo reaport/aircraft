@@ -13,7 +13,7 @@ class RedisStore:
     async def init_redis(cls):
         """Инициализация клиента Redis при запуске приложения"""
         cls.client = redis.from_url(
-            settings.redis_url,
+            settings.REDIS_URL,
             decode_responses=True
         )
         
