@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 
-from models.aircraft_instance import AircraftInstance
 from schemas.generate import GenerateRequest, GenerateResponse
 from services import AircraftServiceDep
 from config import aircraft_config
@@ -25,7 +24,7 @@ class WaterUpdate(BaseModel):
 class FuelUpdate(BaseModel):
     fuel_amount: int
 
-@router.post("/generate", status_code=status.HTTP_201_CREATED, response_model=AircraftInstance)
+@router.post("/generate", status_code=status.HTTP_201_CREATED, response_model=GenerateResponse)
 async def generate_aircraft(
     service: AircraftServiceDep,
     request: GenerateRequest
