@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import logging
 from config.aircraft_config import aircraft_config
 from lifespan import global_lifespan
-from routers import generate, aircraft
+from routers import aircraft
 
 # Настройка логирования
 logging.basicConfig(
@@ -20,7 +20,6 @@ app = FastAPI(
 )
 
 # Регистрируем роутеры
-app.include_router(generate.router)
 app.include_router(aircraft.router)
 
 # Корневой маршрут
