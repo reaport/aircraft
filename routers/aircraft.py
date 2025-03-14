@@ -1,12 +1,14 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 import logging
+from typing import Optional
 
 from schemas.generate import GenerateRequest, GenerateResponse, LandingResponse
 from services import AircraftServiceDep
 from config import aircraft_config
 from gateways.ground_control import GroundControlGateway
 from gateways.orch import OrchestratorGateway
+from models.aircraft_instance import AircraftInstance
 
 router = APIRouter(
     tags=["aircraft"]
@@ -366,3 +368,31 @@ async def get_aircraft_coordinates(
     
     logger.info(f"Получены координаты самолета: aircraft_id={aircraft_id}, node_id={aircraft.node_id}")
     return {"node_id": aircraft.node_id}
+
+class CoordinatesUpdate(BaseModel):
+    node_id: str
+    
+@router.patch("/{aircraft_id}/coordinates", status_code=status.HTTP_204_NO_CONTENT)
+async def set_aircraft_coordinates(
+    aircraft_id: str,
+    coordinates: CoordinatesUpdate,
+    service: AircraftServiceDep
+):
+    """
+    Устанавливает координаты самолета (node_id)
+    """
+    logger.info(f"Запрос на установку координат самолета: aircraft_id={aircraft_id}, node_id={coordinates.node_id}")
+    
+    try:
+        await service.update_node_id(aircraft_id, coordinates.node_id)
+        logger.info(f"Координаты самолета обновлены: aircraft_id={aircraft_id}, node_id={coordinates.node_id}")
+        return
+    except HTTPException as e:
+        logger.error(f"Ошибка HTTP при установке координат самолета: {str(e)}")
+        raise e
+    except Exception as e:
+        logger.error(f"Ошибка при установке координат самолета: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

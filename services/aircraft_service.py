@@ -4,7 +4,6 @@ from typing import Optional
 
 from fastapi import HTTPException
 import redis.asyncio as redis
-import json
 
 from models.aircraft_instance import AircraftInstance
 from config import aircraft_config
