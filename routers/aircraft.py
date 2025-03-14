@@ -34,18 +34,18 @@ async def generate_aircraft(
     
     - **flight_id**: ID рейса для создаваемого инстанса
     """
-    # Создаем инстанс самолета
-    aircraft = await service.generate_random(request.flightId)
+	# Создаем инстанс самолета
+	aircraft = await service.generate_random(request.flightId)
 
-    # Получаем информацию о местах из конфигурации
-    config_data = aircraft_config.aircraft.get(aircraft.model)
-    if not config_data:
-        # Это не должно произойти, но на всякий случай проверяем
-        raise ValueError(f"Модель самолета '{aircraft.model}' не найдена в конфигурации")
+	# Получаем информацию о местах из конфигурации
+	config_data = aircraft_config.aircraft.get(aircraft.model)
+	if not config_data:
+		# Это не должно произойти, но на всякий случай проверяем
+		raise ValueError(f"Модель самолета '{aircraft.model}' не найдена в конфигурации")
 
-    # Формируем ответ
-    response = GenerateResponse(
-        flightId=aircraft.flight_id,
+	# Формируем ответ
+	response = GenerateResponse(
+		flightId=aircraft.flight_id,
 		aircraft_model=aircraft.model,
 		passengers_count=aircraft.actual_passengers,
 		baggage_kg=aircraft.actual_baggage_kg,
@@ -57,7 +57,8 @@ async def generate_aircraft(
 		max_fuel_kg=aircraft.fuel_capacity,
 		seats=config_data.seats
 	)
-    return response
+
+	return response
 
 @router.patch("/{aircraft_id}/passengers", status_code=status.HTTP_204_NO_CONTENT)
 async def update_aircraft_passengers(
