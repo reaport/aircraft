@@ -34,31 +34,34 @@ async def generate_aircraft(
     
     - **flight_id**: ID рейса для создаваемого инстанса
     """
-	# Создаем инстанс самолета
-	aircraft = await service.generate_random(request.flightId)
-
-	# Получаем информацию о местах из конфигурации
-	config_data = aircraft_config.aircraft.get(aircraft.model)
-	if not config_data:
-		# Это не должно произойти, но на всякий случай проверяем
-		raise ValueError(f"Модель самолета '{aircraft.model}' не найдена в конфигурации")
-
-	# Формируем ответ
-	response = GenerateResponse(
-		flightId=aircraft.flight_id,
-		aircraft_model=aircraft.model,
-		passengers_count=aircraft.actual_passengers,
-		baggage_kg=aircraft.actual_baggage_kg,
-		water_kg=aircraft.actual_water_kg,
-		fuel_kg=aircraft.actual_fuel_kg,
-		max_passengers=aircraft.passenger_capacity,
-		max_baggage_kg=aircraft.baggage_capacity_kg,
-		max_water_kg=aircraft.water_capacity,
-		max_fuel_kg=aircraft.fuel_capacity,
-		seats=config_data.seats
-	)
-
-	return response
+    try:
+        # Создаем инстанс самолета
+        aircraft = await service.generate_random(request.flightId)
+        
+        # Получаем информацию о местах из конфигурации
+        config_data = aircraft_config.aircraft.get(aircraft.model)
+        if not config_data:
+            # Это не должно произойти, но на всякий случай проверяем
+            raise ValueError(f"Модель самолета '{aircraft.model}' не найдена в конфигурации")
+        
+        # Формируем ответ
+        response = GenerateResponse(
+            flightId=aircraft.flight_id,
+            aircraft_model=aircraft.model,
+            passengers_count=aircraft.actual_passengers,
+            baggage_kg=aircraft.actual_baggage_kg,
+            water_kg=aircraft.actual_water_kg,
+            fuel_kg=aircraft.actual_fuel_kg,
+            max_passengers=aircraft.passenger_capacity,
+            max_baggage_kg=aircraft.baggage_capacity_kg,
+            max_water_kg=aircraft.water_capacity,
+            max_fuel_kg=aircraft.fuel_capacity,
+            seats=config_data.seats
+        )
+        
+        return response
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.patch("/{aircraft_id}/passengers", status_code=status.HTTP_204_NO_CONTENT)
 async def update_aircraft_passengers(
