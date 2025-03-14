@@ -264,33 +264,33 @@ async def landing_aircraft(
             detail=f"Ошибка при посадке самолета: {str(e)}"
         )
 
-@router.post("/{flight_id}/takeoff", status_code=status.HTTP_200_OK)
+@router.post("/{aircraft_id}/takeoff", status_code=status.HTTP_200_OK)
 async def takeoff_aircraft(
-    flight_id: str,
+    aircraft_id: str,
     service: AircraftServiceDep
 ):
 	"""
 	Взлет самолета
 	"""
 	try:
-		await service.delete(flight_id)
+		await service.delete(aircraft_id)
 	except HTTPException as e:
 		raise e
 	except Exception as e:
 		raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ошибка при взлете самолета: {str(e)}")
 
-@router.get("/{flight_id}/coordinates")
+@router.get("/{aircraft_id}/coordinates")
 async def get_aircraft_coordinates(
-    flight_id: str,
+    aircraft_id: str,
     service: AircraftServiceDep
 ):
     """
     Получает координаты самолета
     """
-    aircraft = await service.get_by_flight_id(flight_id)
+    aircraft = await service.get_by_id(aircraft_id)
     if not aircraft:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Самолет для рейса с ID {flight_id} не найден"
+            detail=f"Самолет с ID {aircraft_id} не найден"
         )
     return {"node_id":aircraft.node_id}
