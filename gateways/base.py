@@ -91,6 +91,28 @@ class BaseGateway:
                 json_data = data
                 data = None
         
+        # Логируем информацию о запросе
+        log_data = {
+            "method": method,
+            "url": url,
+            "params": params,
+        }
+        
+        # Логируем данные запроса, исключая чувствительную информацию
+        if json_data:
+            # Создаем копию для логирования, чтобы не изменять оригинальные данные
+            log_json_data = json_data
+            if isinstance(log_json_data, dict):
+                # Если это словарь, то делаем копию
+                log_json_data = log_json_data.copy()
+                # Маскируем чувствительные данные при их наличии
+                for key in ['password', 'token', 'secret', 'key', 'auth']:
+                    if key in log_json_data:
+                        log_json_data[key] = '***'
+            log_data["data"] = log_json_data
+        
+        logger.info(f"Отправка запроса: {json.dumps(log_data, ensure_ascii=False)}")
+        
         retries = 0
         current_delay = self.retry_delay
         
@@ -116,12 +138,19 @@ class BaseGateway:
                         if 200 <= response.status < 300:
                             # Успешный ответ
                             if not content:
+                                logger.info(f"Получен пустой ответ от {url}, status={response.status}")
                                 return None
                                 
                             try:
-                                return await response.json()
+                                response_json = await response.json()
+                                # Логируем ответ сервера
+                                logger.info(f"Получен ответ от {url}, status={response.status}, data={json.dumps(response_json, ensure_ascii=False)}")
+                                return response_json
                             except json.JSONDecodeError:
-                                return content.decode('utf-8')
+                                # Если ответ не JSON, логируем как текст
+                                response_text = content.decode('utf-8')
+                                logger.info(f"Получен текстовый ответ от {url}, status={response.status}, data={response_text[:500]}")
+                                return response_text
                         else:
                             error_msg = f"Ошибка запроса {method} {url}: статус {response.status}"
                             try:

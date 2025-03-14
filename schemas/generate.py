@@ -19,3 +19,5 @@ class GenerateResponse(BaseModel):
 	max_fuel_kg: int
 	seats: List[Seat]
 	
+class LandingResponse(BaseModel):
+	aircraft_id: str

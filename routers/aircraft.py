@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 import logging
 
-from schemas.generate import GenerateRequest, GenerateResponse
+from schemas.generate import GenerateRequest, GenerateResponse, LandingResponse
 from services import AircraftServiceDep
 from config import aircraft_config
 from gateways.ground_control import GroundControlGateway
@@ -255,7 +255,7 @@ async def get_aircraft_fuel(
     logger.info(f"Получен вес топлива: aircraft_id={aircraft_id}, fuel={aircraft.actual_fuel_kg}")
     return aircraft.actual_fuel_kg
 
-@router.post("/{flight_id}/landing", status_code=status.HTTP_200_OK)
+@router.post("/{flight_id}/landing", status_code=status.HTTP_200_OK, response_model=LandingResponse)
 async def landing_aircraft(
     flight_id: str,
     service: AircraftServiceDep,
@@ -324,6 +324,7 @@ async def landing_aircraft(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка при посадке самолета: {str(e)}"
         )
+        
 
 @router.post("/{aircraft_id}/takeoff", status_code=status.HTTP_200_OK)
 async def takeoff_aircraft(
