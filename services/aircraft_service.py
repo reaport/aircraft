@@ -56,6 +56,8 @@ class AircraftService:
             "flight_id": flight_id,
             "baggage_capacity_kg": baggage_capacity_kg,
             "passenger_capacity": passenger_capacity,
+            "water_capacity": water_capacity,
+            "fuel_capacity": fuel_capacity,
             "actual_passengers": actual_passengers,
             "actual_baggage_kg": actual_baggage_kg,
             "actual_water_kg": actual_water_kg,
