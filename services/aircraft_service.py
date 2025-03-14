@@ -1,16 +1,12 @@
-import json
 import logging
 import random
-import string
-from typing import List, Optional, Dict, Any
-from uuid import UUID
-from datetime import datetime
+from typing import Optional
 
 from fastapi import HTTPException
 import redis.asyncio as redis
 
-from models.aircraft_instance import AircraftInstance, AircraftStatus, AircraftLocation
-from config import aircraft_config, settings
+from models.aircraft_instance import AircraftInstance
+from config import aircraft_config
 
 logger = logging.getLogger("uvicorn")
 
@@ -150,16 +146,16 @@ class AircraftService:
             logger.warning(f"Маппинг aircraft_id -> flight_id для {aircraft_id} не найден")
             raise HTTPException(status_code=404, detail=f"Маппинг aircraft_id -> flight_id для {aircraft_id} не найден")
         
-        flight_id_str = flight_id.decode('utf-8')
-        logger.info(f"Найден маппинг aircraft_id -> flight_id: {aircraft_id} -> {flight_id_str}")
+
+        logger.info(f"Найден маппинг aircraft_id -> flight_id: {aircraft_id} -> {flight_id}")
         
         # Ищем по flight_id
-        flight_key = f"flight:{flight_id_str}"
+        flight_key = f"flight:{flight_id}"
         data = await self.redis.get(flight_key)
         
         if not data:
-            logger.warning(f"Маппинг найден, но данные по flight_id {flight_id_str} не найдены")
-            raise HTTPException(status_code=404, detail=f"Данные по flight_id {flight_id_str} не найдены")
+            logger.warning(f"Маппинг найден, но данные по flight_id {flight_id} не найдены")
+            raise HTTPException(status_code=404, detail=f"Данные по flight_id {flight_id} не найдены")
         return AircraftInstance.model_validate_json(data)
     
     async def update(self, aircraft: AircraftInstance) -> AircraftInstance:
@@ -181,22 +177,20 @@ class AircraftService:
         if not flight_id:
             logger.warning(f"Маппинг aircraft_id -> flight_id для {aircraft.id} не найден")
             raise HTTPException(status_code=404, detail=f"Маппинг aircraft_id -> flight_id для {aircraft.id} не найден")
-        
-        # Получаем ID рейса из маппинга
-        flight_id_str = flight_id.decode('utf-8')
-        logger.info(f"Найден маппинг aircraft_id -> flight_id: {aircraft.id} -> {flight_id_str}")
+	
+        logger.info(f"Найден маппинг aircraft_id -> flight_id: {aircraft.id} -> {flight_id}")
         
         # Проверяем, существует ли рейс с таким ID
-        flight_key = f"flight:{flight_id_str}"
+        flight_key = f"flight:{flight_id}"
         data = await self.redis.get(flight_key)
         if not data:
-            logger.warning(f"Данные по flight_id {flight_id_str} не найдены")
-            raise HTTPException(status_code=404, detail=f"Данные по flight_id {flight_id_str} не найдены")
+            logger.warning(f"Данные по flight_id {flight_id} не найдены")
+            raise HTTPException(status_code=404, detail=f"Данные по flight_id {flight_id} не найдены")
         
         # Сохраняем обновленные данные по ключу flight_id
         await self.redis.set(flight_key, aircraft.model_dump_json())
         
-        logger.info(f"Обновлены данные самолета с ID {aircraft.id} для рейса {flight_id_str}")
+        logger.info(f"Обновлены данные самолета с ID {aircraft.id} для рейса {flight_id}")
         return aircraft
     
     async def delete(self, aircraft_id: str) -> bool:
@@ -216,20 +210,19 @@ class AircraftService:
                 logger.warning(f"Маппинг aircraft_id -> flight_id для {aircraft_id} не найден при попытке удаления")
                 return False
             
-            flight_id_str = flight_id.decode('utf-8')
-            logger.info(f"Найден маппинг aircraft_id -> flight_id: {aircraft_id} -> {flight_id_str} для удаления")
+            logger.info(f"Найден маппинг aircraft_id -> flight_id: {aircraft_id} -> {flight_id} для удаления")
             
             # Удаляем данные по ключу flight:{flight_id}
-            flight_key = f"flight:{flight_id_str}"
+            flight_key = f"flight:{flight_id}"
             flight_deleted = await self.redis.delete(flight_key)
             
             # Удаляем маппинг aircraft_id -> flight_id
             mapping_deleted = await self.redis.delete(f"aircraft_to_flight:{aircraft_id}")
             
             # Удаляем flight_id из набора всех рейсов
-            await self.redis.srem("flights:all", flight_id_str)
+            await self.redis.srem("flights:all", flight_id)
             
-            logger.info(f"Удален инстанс самолета с ID {aircraft_id} для рейса {flight_id_str}. Статус: данные={flight_deleted}, маппинг={mapping_deleted}")
+            logger.info(f"Удален инстанс самолета с ID {aircraft_id} для рейса {flight_id}. Статус: данные={flight_deleted}, маппинг={mapping_deleted}")
             
             # Успешно удалено, если хотя бы одна запись была удалена
             return flight_deleted > 0 or mapping_deleted > 0
