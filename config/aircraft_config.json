@@ -4,8 +4,8 @@
 			"model": "Boeing 737-800",
 			"baggageCapacityKg": 3920,
 			"passengerCapacity": 196,
-			"waterCapacity": 200,
-			"fuelCapacity": 100000,
+			"waterCapacity": 100,
+			"fuelCapacity": 90000,
 			"seats": [
 				{
 					"seatNumber": "1A",
@@ -797,7 +797,7 @@
 			"model": "Airbus A320neo",
 			"baggageCapacityKg": 4400,
 			"passengerCapacity": 220,
-			"waterCapacity": 250,
+			"waterCapacity": 150,
 			"fuelCapacity": 150000,
 			"seats": [
 				{
@@ -1862,7 +1862,7 @@
 			"model": "Boeing 777-300ER",
 			"baggageCapacityKg": 5980,
 			"passengerCapacity": 299,
-			"waterCapacity": 300,
+			"waterCapacity": 200,
 			"fuelCapacity": 200000,
 			"seats": [
 				{
