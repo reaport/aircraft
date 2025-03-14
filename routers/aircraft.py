@@ -280,3 +280,19 @@ async def takeoff_aircraft(
 		raise e
 	except Exception as e:
 		raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ошибка при взлете самолета: {str(e)}")
+
+@router.get("/{flight_id}/coordinates")
+async def get_aircraft_coordinates(
+    flight_id: str,
+    service: AircraftServiceDep
+):
+    """
+    Получает координаты самолета
+    """
+    aircraft = await service.get_by_flight_id(flight_id)
+    if not aircraft:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Самолет для рейса с ID {flight_id} не найден"
+        )
+    return {"node_id":aircraft.node_id}
