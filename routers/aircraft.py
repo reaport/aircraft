@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
+import logging
 
 from schemas.generate import GenerateRequest, GenerateResponse
 from services import AircraftServiceDep
@@ -10,6 +11,9 @@ from gateways.orch import OrchestratorGateway
 router = APIRouter(
     tags=["aircraft"]
 )
+
+# Получаем логгер
+logger = logging.getLogger("uvicorn")
 
 # Модели запросов для новых эндпоинтов
 class PassengerUpdate(BaseModel):
@@ -34,6 +38,8 @@ async def generate_aircraft(
     
     - **flight_id**: ID рейса для создаваемого инстанса
     """
+    logger.info(f"Запрос на создание самолета: flight_id={request.flightId}")
+    
     try:
         # Создаем инстанс самолета
         aircraft = await service.generate_random(request.flightId)
@@ -59,8 +65,10 @@ async def generate_aircraft(
             seats=config_data.seats
         )
         
+        logger.info(f"Самолет успешно создан: модель={aircraft.model}, flight_id={aircraft.flight_id}")
         return response
     except ValueError as e:
+        logger.error(f"Ошибка при создании самолета: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.patch("/{aircraft_id}/passengers", status_code=status.HTTP_204_NO_CONTENT)
@@ -72,12 +80,17 @@ async def update_aircraft_passengers(
     """
     Обновляет количество пассажиров в инстансе самолета
     """
+    logger.info(f"Запрос на обновление пассажиров: aircraft_id={aircraft_id}, passengers={passenger_data.passengers}")
+    
     try:
         updated_aircraft = await service.update_passengers(aircraft_id, passenger_data.passengers)
+        logger.info(f"Пассажиры обновлены: aircraft_id={aircraft_id}, passengers={passenger_data.passengers}")
         return updated_aircraft
     except HTTPException as e:
+        logger.error(f"Ошибка HTTP при обновлении пассажиров: {str(e)}")
         raise e
     except Exception as e:
+        logger.error(f"Ошибка при обновлении пассажиров: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -91,12 +104,17 @@ async def get_aircraft_passengers(
     """
     Получает количество пассажиров в инстансе самолета
     """
+    logger.info(f"Запрос на получение количества пассажиров: aircraft_id={aircraft_id}")
+    
     aircraft = await service.get_by_id(aircraft_id)
     if not aircraft:
+        logger.warning(f"Самолет с ID {aircraft_id} не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Самолет с ID {aircraft_id} не найден"
         )
+    
+    logger.info(f"Получено количество пассажиров: aircraft_id={aircraft_id}, passengers={aircraft.actual_passengers}")
     return aircraft.actual_passengers
 
 @router.patch("/{aircraft_id}/baggage", status_code=status.HTTP_204_NO_CONTENT)
@@ -108,12 +126,17 @@ async def update_aircraft_baggage(
     """
     Обновляет вес багажа в инстансе самолета
     """
+    logger.info(f"Запрос на обновление веса багажа: aircraft_id={aircraft_id}, baggage={baggage_data.baggage}")
+    
     try:
         updated_aircraft = await service.update_baggage(aircraft_id, baggage_data.baggage)
+        logger.info(f"Вес багажа обновлен: aircraft_id={aircraft_id}, baggage={baggage_data.baggage}")
         return updated_aircraft
     except HTTPException as e:
+        logger.error(f"Ошибка HTTP при обновлении веса багажа: {str(e)}")
         raise e
     except Exception as e:
+        logger.error(f"Ошибка при обновлении веса багажа: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -127,12 +150,17 @@ async def get_aircraft_baggage(
     """	
     Получает вес багажа в инстансе самолета
     """
+    logger.info(f"Запрос на получение веса багажа: aircraft_id={aircraft_id}")
+    
     aircraft = await service.get_by_id(aircraft_id)
     if not aircraft:
+        logger.warning(f"Самолет с ID {aircraft_id} не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Самолет с ID {aircraft_id} не найден"
         )
+    
+    logger.info(f"Получен вес багажа: aircraft_id={aircraft_id}, baggage={aircraft.actual_baggage_kg}")
     return aircraft.actual_baggage_kg
 
 @router.patch("/{aircraft_id}/water", status_code=status.HTTP_204_NO_CONTENT)
@@ -144,12 +172,17 @@ async def update_aircraft_water(
     """
     Обновляет вес воды в инстансе самолета
     """
+    logger.info(f"Запрос на обновление веса воды: aircraft_id={aircraft_id}, water={water_data.water_amount}")
+    
     try:
         updated_aircraft = await service.update_water(aircraft_id, water_data.water_amount)
+        logger.info(f"Вес воды обновлен: aircraft_id={aircraft_id}, water={water_data.water_amount}")
         return updated_aircraft
     except HTTPException as e:
+        logger.error(f"Ошибка HTTP при обновлении веса воды: {str(e)}")
         raise e
     except Exception as e:
+        logger.error(f"Ошибка при обновлении веса воды: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -163,12 +196,17 @@ async def get_aircraft_water(
     """
     Получает вес воды в инстансе самолета
     """
+    logger.info(f"Запрос на получение веса воды: aircraft_id={aircraft_id}")
+    
     aircraft = await service.get_by_id(aircraft_id)
     if not aircraft:
+        logger.warning(f"Самолет с ID {aircraft_id} не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Самолет с ID {aircraft_id} не найден"
         )
+    
+    logger.info(f"Получен вес воды: aircraft_id={aircraft_id}, water={aircraft.actual_water_kg}")
     return aircraft.actual_water_kg
 
 @router.patch("/{aircraft_id}/fuel", status_code=status.HTTP_204_NO_CONTENT)
@@ -180,12 +218,17 @@ async def update_aircraft_fuel(
     """
     Обновляет вес топлива в инстансе самолета
     """
+    logger.info(f"Запрос на обновление веса топлива: aircraft_id={aircraft_id}, fuel={fuel_data.fuel_amount}")
+    
     try:
         updated_aircraft = await service.update_fuel(aircraft_id, fuel_data.fuel_amount)
+        logger.info(f"Вес топлива обновлен: aircraft_id={aircraft_id}, fuel={fuel_data.fuel_amount}")
         return updated_aircraft
     except HTTPException as e:
+        logger.error(f"Ошибка HTTP при обновлении веса топлива: {str(e)}")
         raise e
     except Exception as e:
+        logger.error(f"Ошибка при обновлении веса топлива: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -199,12 +242,17 @@ async def get_aircraft_fuel(
     """
     Получает вес топлива в инстансе самолета
     """
+    logger.info(f"Запрос на получение веса топлива: aircraft_id={aircraft_id}")
+    
     aircraft = await service.get_by_id(aircraft_id)
     if not aircraft:
+        logger.warning(f"Самолет с ID {aircraft_id} не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Самолет с ID {aircraft_id} не найден"
         )
+    
+    logger.info(f"Получен вес топлива: aircraft_id={aircraft_id}, fuel={aircraft.actual_fuel_kg}")
     return aircraft.actual_fuel_kg
 
 @router.post("/{flight_id}/landing", status_code=status.HTTP_200_OK)
@@ -226,9 +274,12 @@ async def landing_aircraft(
     Returns:
         dict: ID самолета
     """
+    logger.info(f"Запрос на посадку самолета: flight_id={flight_id}")
+    
     # Получаем самолет по ID рейса
     aircraft = await service.get_by_flight_id(flight_id)
     if not aircraft:
+        logger.warning(f"Самолет для рейса с ID {flight_id} не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Самолет для рейса с ID {flight_id} не найден"
@@ -236,29 +287,39 @@ async def landing_aircraft(
     
     try:
         # Регистрируем самолет в сервисе Ground Control
+        logger.info(f"Регистрация самолета в Ground Control: flight_id={flight_id}")
         gc_response = await ground_control.register_vehicle()
+        logger.info(f"Ответ от Ground Control: {gc_response}")
         
         # Извлекаем ID транспортного средства и ID узла из ответа
         aircraft_id = gc_response.get('vehicleId')
         node_id = gc_response.get('garrageNodeId')
         
         if not aircraft_id or not node_id:
+            logger.error(f"Сервис Ground Control вернул неполные данные: {gc_response}")
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail="Сервис Ground Control вернул неполные данные"
             )
+        
+        logger.info(f"Установка ID для самолета: flight_id={flight_id}, aircraft_id={aircraft_id}")
         aircraft = await service.set_aircraft_id(flight_id, aircraft_id)
+        
         # Обновляем самолет с полученными ID
+        logger.info(f"Обновление node_id для самолета: aircraft_id={aircraft_id}, node_id={node_id}")
         aircraft.update_node_id(node_id)
         await service.update(aircraft)
         
         # Сообщаем о посадке оркестратору
+        logger.info(f"Отправка сообщения о посадке в оркестратор: aircraft_id={aircraft.id}, node_id={node_id}")
         await orchestrator.report_landing(aircraft.id, node_id)
         
         # Возвращаем ID самолета
+        logger.info(f"Посадка самолета успешно выполнена: aircraft_id={aircraft.id}")
         return {"aircraft_id": aircraft.id}
         
     except Exception as e:
+        logger.error(f"Ошибка при посадке самолета: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка при посадке самолета: {str(e)}"
@@ -269,15 +330,20 @@ async def takeoff_aircraft(
     aircraft_id: str,
     service: AircraftServiceDep
 ):
-	"""
-	Взлет самолета
-	"""
-	try:
-		await service.delete(aircraft_id)
-	except HTTPException as e:
-		raise e
-	except Exception as e:
-		raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ошибка при взлете самолета: {str(e)}")
+    """
+    Взлет самолета
+    """
+    logger.info(f"Запрос на взлет самолета: aircraft_id={aircraft_id}")
+    
+    try:
+        await service.delete(aircraft_id)
+        logger.info(f"Самолет успешно взлетел (удален): aircraft_id={aircraft_id}")
+    except HTTPException as e:
+        logger.error(f"Ошибка HTTP при взлете самолета: {str(e)}")
+        raise e
+    except Exception as e:
+        logger.error(f"Ошибка при взлете самолета: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ошибка при взлете самолета: {str(e)}")
 
 @router.get("/{aircraft_id}/coordinates")
 async def get_aircraft_coordinates(
@@ -287,10 +353,15 @@ async def get_aircraft_coordinates(
     """
     Получает координаты самолета
     """
+    logger.info(f"Запрос на получение координат самолета: aircraft_id={aircraft_id}")
+    
     aircraft = await service.get_by_id(aircraft_id)
     if not aircraft:
+        logger.warning(f"Самолет с ID {aircraft_id} не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Самолет с ID {aircraft_id} не найден"
         )
-    return {"node_id":aircraft.node_id}
+    
+    logger.info(f"Получены координаты самолета: aircraft_id={aircraft_id}, node_id={aircraft.node_id}")
+    return {"node_id": aircraft.node_id}
