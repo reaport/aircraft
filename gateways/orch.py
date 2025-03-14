@@ -24,33 +24,6 @@ class OrchestratorGateway(BaseGateway):
                 "X-Service-Name": "aircraft-service"
             }
         )
-    
-    async def register_vehicle(self, aircraft_id: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Регистрирует транспортное средство (самолет) в сервисе оркестратора
-        
-        Args:
-            aircraft_id: Опциональный ID самолета для логирования
-                
-        Returns:
-            Dict[str, Any]: Результат регистрации от сервиса оркестратора, содержащий:
-                - garrageNodeId: ID узла гаража/аэропорта
-                - vehicleId: Назначенный ID транспортного средства
-                - serviceSpots: Доступные сервисные точки
-        """
-        log_id = aircraft_id or "новый самолет"
-        logger.info(f"Регистрация самолета в оркестраторе: {log_id}")
-        
-        try:
-            # Отправляем пустой POST запрос на регистрацию самолета
-            # Согласно формату API: POST /register-vehicle/airplane
-            response = await self.post("register-vehicle/airplane", data={})
-            
-            logger.info(f"Самолет успешно зарегистрирован в оркестраторе с ID: {response.get('vehicleId', 'неизвестно')}")
-            return response
-        except Exception as e:
-            logger.error(f"Ошибка при регистрации самолета в оркестраторе: {str(e)}")
-            raise
             
     async def report_landing(self, aircraft_id: str, landing_point: str) -> Dict[str, Any]:
         """
@@ -68,7 +41,7 @@ class OrchestratorGateway(BaseGateway):
         try:
             # Отправляем POST запрос о приземлении
             data = {"landing_point": landing_point}
-            response = await self.post(f"{aircraft_id}/landing", data=data)
+            response = await self.post(f"aircraft/{aircraft_id}/landing", data=data)
             
             logger.info(f"Сообщение о приземлении самолета {aircraft_id} успешно отправлено в оркестратор")
             return response
