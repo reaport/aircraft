@@ -9,7 +9,7 @@ from gateways.ground_control import GroundControlGateway
 from gateways.orch import OrchestratorGateway
 
 router = APIRouter(
-    prefix="/aircraft",
+    prefix="/",
     tags=["aircraft"]
 )
 
