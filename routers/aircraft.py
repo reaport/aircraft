@@ -117,7 +117,7 @@ async def get_aircraft_passengers(
         )
     
     logger.info(f"Получено количество пассажиров: aircraft_id={aircraft_id}, passengers={aircraft.actual_passengers}")
-    return aircraft.actual_passengers
+    return {"passengers": aircraft.actual_passengers}
 
 @router.patch("/{aircraft_id}/baggage", status_code=status.HTTP_204_NO_CONTENT)
 async def update_aircraft_baggage(
@@ -163,7 +163,7 @@ async def get_aircraft_baggage(
         )
     
     logger.info(f"Получен вес багажа: aircraft_id={aircraft_id}, baggage={aircraft.actual_baggage_kg}")
-    return aircraft.actual_baggage_kg
+    return {"baggage": aircraft.actual_baggage_kg}
 
 @router.patch("/{aircraft_id}/water", status_code=status.HTTP_204_NO_CONTENT)
 async def update_aircraft_water(
@@ -209,7 +209,7 @@ async def get_aircraft_water(
         )
     
     logger.info(f"Получен вес воды: aircraft_id={aircraft_id}, water={aircraft.actual_water_kg}")
-    return aircraft.actual_water_kg
+    return {"water_amount": aircraft.actual_water_kg}
 
 @router.patch("/{aircraft_id}/fuel", status_code=status.HTTP_204_NO_CONTENT)
 async def update_aircraft_fuel(
@@ -255,7 +255,7 @@ async def get_aircraft_fuel(
         )
     
     logger.info(f"Получен вес топлива: aircraft_id={aircraft_id}, fuel={aircraft.actual_fuel_kg}")
-    return aircraft.actual_fuel_kg
+    return {"fuel_amount": aircraft.actual_fuel_kg}
 
 @router.post("/{flight_id}/landing", status_code=status.HTTP_200_OK, response_model=LandingResponse)
 async def landing_aircraft(
