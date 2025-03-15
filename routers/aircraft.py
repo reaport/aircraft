@@ -396,3 +396,24 @@ async def set_aircraft_coordinates(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+        
+@router.get("/{flight_id}/aircraft_id")
+async def get_aircraft_id_by_flight_id(
+    flight_id: str,
+    service: AircraftServiceDep
+):
+    """
+    Получает ID самолета по ID рейса
+    """
+    logger.info(f"Запрос на получение ID самолета по ID рейса: flight_id={flight_id}")
+    
+    aircraft = await service.get_by_flight_id(flight_id)
+    if not aircraft:
+        logger.warning(f"Самолет для рейса с ID {flight_id} не найден")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Самолет для рейса с ID {flight_id} не найден"
+        )
+    
+    logger.info(f"Получен ID самолета: flight_id={flight_id}, aircraft_id={aircraft.id}")
+    return {"aircraft_id": aircraft.id}
