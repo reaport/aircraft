@@ -12,8 +12,8 @@ class SeatClass(str, Enum):
 
 class Seat(BaseModel):
     """Модель места в самолете"""
-    seat_number: str
-    seat_class: SeatClass
+    seat_number: str = Field(..., alias="seatNumber")
+    seat_class: SeatClass = Field(..., alias="seatClass")
 
 class Aircraft(BaseModel):
     """Модель самолета"""
